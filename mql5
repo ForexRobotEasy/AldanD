@@ -1,0 +1,69 @@
+
+// AldanD Forex Software
+// Developer: Forex Robot Easy Team
+// Developer's Site: forexroboteasy.com
+
+// Input Parameters
+input double lotSize = 0.1; // Lot size
+input double recommendedDeposit = 1000; // Recommended deposit amount
+
+// Indicator Parameters
+int indicatorPeriod = 14;
+int indicatorLevel = 30;
+
+// Initialize variables
+double lotSizeMultiplier = 1.0; // Lot size multiplier
+double accountBalance; // Account balance
+double stopLossPrice; // Stop loss price
+double takeProfitPrice; // Take profit price
+
+// Calculate lot size multiplier based on account balance
+if(AccountInfoDouble(ACCOUNT_BALANCE) >= 10000)
+    lotSizeMultiplier = 2.0;
+else if(AccountInfoDouble(ACCOUNT_BALANCE) >= 5000)
+    lotSizeMultiplier = 1.5;
+
+// Calculate stop loss and take profit prices based on lot size
+stopLossPrice = NormalizeDouble((Ask - (indicatorLevel * Point)), Digits);
+takeProfitPrice = NormalizeDouble((Ask + (indicatorLevel * Point)), Digits);
+
+// Check for price reversal points
+if(iCustom(NULL, PERIOD_H4, 'ReversalIndicator', indicatorPeriod, indicatorLevel) == 1)
+{
+    // Open a buy position
+    int ticket = OrderSend(Symbol(), OP_BUY, lotSize * lotSizeMultiplier, Ask, 3, stopLossPrice, takeProfitPrice, 'Buy Order', MagicNumber, 0, Green);
+    
+    if(ticket > 0)
+    {
+        // Order placed successfully
+        Print('Buy order placed successfully: ', ticket);
+    }
+    else
+    {
+        // Order placement failed
+        Print('Error placing buy order: ', GetLastError());
+    }
+}
+
+// Calculate lot size based on recommended deposit
+double recommendedLotSize = MathCeil(recommendedDeposit / 10000);
+
+// Check for price reversal points
+if(iCustom(NULL, PERIOD_H4, 'ReversalIndicator', indicatorPeriod, indicatorLevel) == -1)
+{
+    // Open a sell position
+    int ticket = OrderSend(Symbol(), OP_SELL, recommendedLotSize, Bid, 3, stopLossPrice, takeProfitPrice, 'Sell Order', MagicNumber, 0, Red);
+    
+    if(ticket > 0)
+    {
+        // Order placed successfully
+        Print('Sell order placed successfully: ', ticket);
+    }
+    else
+    {
+        // Order placement failed
+        Print('Error placing sell order: ', GetLastError());
+    }
+}
+
+// End of code
